@@ -8,13 +8,19 @@ const PostContent = (postContent: { content: InfiniteQueryOutput }) => {
     <>
       <p className="mx-auto mb-7 max-w-[60ch] break-words text-white">{text}</p>
       <div className="m-4 flex justify-evenly break-words">
-        <MarkdownTextarea className="max-w-[45vw]">
-          {leftBlock}
-        </MarkdownTextarea>
-        {rightBlock && (
+        <div onClick={() => void navigator.clipboard.writeText(leftBlock)}>
+          <p className="cursor-pointer">click to copy</p>
           <MarkdownTextarea className="max-w-[45vw]">
-            {rightBlock}
+            {leftBlock}
           </MarkdownTextarea>
+        </div>
+        {rightBlock && (
+          <div onClick={() => void navigator.clipboard.writeText(rightBlock)}>
+            <div className="cursor-pointer">click to copy</div>
+            <MarkdownTextarea className="max-w-[45vw]">
+              {rightBlock}
+            </MarkdownTextarea>
+          </div>
         )}
       </div>
     </>
