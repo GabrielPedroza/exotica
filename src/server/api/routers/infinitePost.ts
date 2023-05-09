@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { timelineOptions } from "@/src/types/timelineOptions";
-import { BlockPost } from "@prisma/client";
+// import { BlockPost } from "@prisma/client";
 
 export const infinitePost = createTRPCRouter({
   infinitePost: publicProcedure
@@ -43,7 +43,6 @@ export const infinitePost = createTRPCRouter({
           },
         },
       });
-      console.log(items);
 
       //       type BlockPostWithUpvotesAndAuthor = BlockPost & {
       //         upvotes: number;
@@ -80,7 +79,6 @@ export const infinitePost = createTRPCRouter({
       //   LIMIT ${limit + 1}
       // `;
 
-      // console.log(items);
       let nextCursor: typeof cursor | undefined = undefined;
       if (items.length > limit) {
         const nextItem = items.pop(); // return the last item from the array
