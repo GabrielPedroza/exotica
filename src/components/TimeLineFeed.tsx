@@ -41,11 +41,10 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
               className="max-w-[w-full]"
             >
               <PostContent content={post} />
-              {/* <p>likes: {post.voteState ?? "0"}</p> */}
               <Vote
                 postID={post.id}
                 voteCount={post._count.votes}
-                myVote={post.votes[0] || null}
+                myCurrentVote={post.votes[0] || null}
               />
               <p>Post made by:</p>
               <CreatedByUser
