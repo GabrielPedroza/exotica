@@ -18,7 +18,7 @@ const Button = ({
   return (
     <Link
       href={href}
-      className={`rounded bg-blue-500 py-4 px-6 text-white text-${textSize} hover:bg-blue-700 ${className}`}
+      className={`rounded bg-blue-500 px-6 py-4 text-white text-${textSize} hover:bg-blue-700 ${className}`}
       {...rest}
     >
       {children}

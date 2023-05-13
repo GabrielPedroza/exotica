@@ -64,7 +64,7 @@ const WhatWeCanDo = () => { // ES6 arrow function
         Sign up now!
       </Button>
     </main>
-    <footer className="absolute bottom-0 right-0 left-0 bg-gray-800 px-60 py-4 text-center text-white">
+    <footer className="absolute bottom-0 left-0 right-0 bg-gray-800 px-60 py-4 text-center text-white">
       <p>&copy; 2023 DeadEnd Devs. All rights not reserved.</p>
     </footer>
   </div>
