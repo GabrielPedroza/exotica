@@ -79,6 +79,8 @@ const Post = () => {
       createPost.mutate({ description, editorBoxOne, editorBoxTwo });
     }
 
+    if (createPost.isError) console.error(createPost.error);
+
     void Confetti();
 
     setDescription("");
