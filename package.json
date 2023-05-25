@@ -1,6 +1,9 @@
 {
   "name": "deadend-devs",
   "version": "0.1.0",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "private": true,
   "scripts": {
     "build": "next build",
@@ -11,7 +14,9 @@
     "check-lint": "eslint . --ext ts --ext tsx --ext js",
     "check-types": "tsc --pretty --noEmit",
     "check-format": "prettier --check .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prisma-update-schema": "yarn prisma generate && yarn prisma db push",
+    "db-seed": "NODE_ENV=development prisma db seed"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.5.0",

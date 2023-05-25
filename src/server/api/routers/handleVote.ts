@@ -51,29 +51,4 @@ export const handleVote = createTRPCRouter({
         });
       }
     }),
-
-  voteCount: protectedProcedure
-    .input(
-      z.object({
-        postID: z.string(),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      const { prisma } = ctx;
-      const { postID } = input;
-
-      const voteCounts = await prisma.vote.groupBy({
-        by: ["typeOfVote"],
-        where: { postID },
-        _count: true,
-      });
-
-      const upvoteCount =
-        voteCounts.find((count) => count.typeOfVote === "up")?._count ?? 0;
-
-      const downvoteCount =
-        voteCounts.find((count) => count.typeOfVote === "down")?._count ?? 0;
-
-      return { upvoteCount, downvoteCount };
-    }),
 });
