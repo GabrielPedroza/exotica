@@ -6,7 +6,6 @@ import CreatedByUser from "./CreatedByUser";
 import PostContent from "./PostContent";
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
 import Vote from "./Vote";
-import Comments from "./Comment";
 
 const TimeLineFeed = (props: { options: TimelineOptions }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -46,7 +45,6 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
                     }
                     myCurrentVote={post.currentUserVoteState}
                   />
-                  <Comments />
                   <p>Post made by:</p>
                   <CreatedByUser
                     userInfo={{
