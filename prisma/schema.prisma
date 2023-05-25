@@ -62,7 +62,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Defining each user post
 model BlockPost {
   id String @id @default(cuid())
 

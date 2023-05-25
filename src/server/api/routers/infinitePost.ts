@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { timelineOptions } from "@/src/types/timelineOptions";
-// import { BlockPost } from "@prisma/client";
 
 export const infinitePost = createTRPCRouter({
   infinitePost: publicProcedure
