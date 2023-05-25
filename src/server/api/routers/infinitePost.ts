@@ -14,10 +14,9 @@ export const infinitePost = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { cursor, options } = input;
       const { limit, sort, filters } = options;
-      // const voteCount = api.handleVote.voteCount.useQuery();
 
       const items = await ctx.prisma.blockPost.findMany({
-        take: limit + 1, // get an extra item at the end which we'll use as next cursor
+        take: limit + 1,
         where: filters,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: { createdAt: sort },
@@ -27,16 +26,12 @@ export const infinitePost = createTRPCRouter({
             select: {
               votes: {
                 where: {
-                  typeOfVote: "up", // only count upvotes, bc prisma
+                  typeOfVote: "up",
                 },
               },
             },
           },
           votes: {
-            // get the vote type of the current user
-            where: {
-              userID: ctx.session?.user?.id,
-            },
             select: {
               typeOfVote: true,
             },
@@ -44,40 +39,34 @@ export const infinitePost = createTRPCRouter({
         },
       });
 
-      //       type BlockPostWithUpvotesAndAuthor = BlockPost & {
-      //         upvotes: number;
-      //         downvotes: number;
-      //         author: {
-      //           name: string | null;
-      //           image: string | null;
-      //         };
-      //         myVote: {
-      //           id: string;
-      //           typeOfVote: string;
-      //         };
-      //       };
+      const postIdList = items.map((item) => item.id);
+      const voteState = await ctx.prisma.vote.findMany({
+        where: {
+          postID: {
+            in: postIdList,
+          },
+          userID: ctx.session?.user?.id,
+        },
+        select: {
+          postID: true,
+          typeOfVote: true,
+        },
+      });
 
-      //       const items = await ctx.prisma.$queryRaw<BlockPostWithUpvotesAndAuthor[]>`
-      //   SELECT
-      //       p.*,
-      //       COUNT(CASE WHEN v.typeOfVote = 'up' THEN 1 END) as upvotes,
-      //       COUNT(CASE WHEN v.typeOfVote = 'down' THEN 1 END) as downvotes,
-      //       (SELECT JSON_OBJECT('id', v.id, 'typeOfVote', v.typeOfVote) FROM Vote AS v WHERE v.postID = p.id AND v.userID = ${
-      //         ctx.session?.user?.id
-      //       }) AS myVote,
-      //       json_object('name', a.name, 'image', a.image) as author
+      const voteStateByPostId: Record<string, string | null> = {};
+      voteState.forEach((vote) => {
+        voteStateByPostId[vote.postID] = vote.typeOfVote;
+      });
 
-      //   FROM
-      //       BlockPost p
-      //       LEFT JOIN Vote v ON v.postID = p.id
-      //       left join User as a on a.id = p.authorID
-      //   WHERE p.authorID != ${ctx.session?.user?.id}
-      //   GROUP BY
-      //       p.id
-      //   ORDER BY
-      //       p.createdAt ASC
-      //   LIMIT ${limit + 1}
-      // `;
+      const itemsWithTotalVotesAndVoteState = items.map((item) => {
+        const totalVotes = item.votes.length;
+        const currentUserVoteState = voteStateByPostId[item.id] || null;
+        return {
+          ...item,
+          totalVotes: totalVotes,
+          currentUserVoteState: currentUserVoteState,
+        };
+      });
 
       let nextCursor: typeof cursor | undefined = undefined;
       if (items.length > limit) {
@@ -85,7 +74,7 @@ export const infinitePost = createTRPCRouter({
         nextCursor = nextItem?.id;
       }
       return {
-        items,
+        itemsWithTotalVotesAndVoteState,
         nextCursor,
       };
     }),
