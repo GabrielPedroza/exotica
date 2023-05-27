@@ -26,37 +26,40 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
         <>
           {data.pages.map((page, i) => (
             <React.Fragment key={`page_${i}`}>
-              {page.itemsWithTotalVotesAndVoteState.map((post, j) => (
-                <div
-                  key={post.id}
-                  ref={
-                    i === data.pages.length - 1 &&
-                    j === page.itemsWithTotalVotesAndVoteState.length - 3
-                      ? lastElementRef
-                      : null
-                  }
-                  className="max-w-[w-full]"
-                >
-                  <PostContent content={post} />
-                  <Vote
-                    postID={post.id}
-                    voteCount={
-                      post._count.votes - (post.totalVotes - post._count.votes)
+              {page.itemsWithTotalVotesAndVoteState.map((post, j) => {
+                return (
+                  <div
+                    key={post.id}
+                    ref={
+                      i === data.pages.length - 1 &&
+                      j === page.itemsWithTotalVotesAndVoteState.length - 3
+                        ? lastElementRef
+                        : null
                     }
-                    myCurrentVote={post.currentUserVoteState}
-                  />
-                  <p>Post made by:</p>
-                  <CreatedByUser
-                    userInfo={{
-                      author: {
-                        name: post.author.name,
-                        image: post.author.image,
-                      },
-                      authorID: post.authorID,
-                    }}
-                  />
-                </div>
-              ))}
+                    className="max-w-[w-full]"
+                  >
+                    <PostContent content={post} />
+                    <Vote
+                      postID={post.id}
+                      voteCount={
+                        post._count.votes -
+                        (post.totalVotes - post._count.votes)
+                      }
+                      myCurrentVote={post.currentUserVoteState}
+                    />
+                    <p>Post made by:</p>
+                    <CreatedByUser
+                      userInfo={{
+                        author: {
+                          name: post.author.name,
+                          image: post.author.image,
+                        },
+                        authorID: post.authorID,
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </React.Fragment>
           ))}
         </>
