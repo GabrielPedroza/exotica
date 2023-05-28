@@ -1,8 +1,8 @@
 import { api } from "@/utils/api";
 import type { VoteType } from "../types/voteType";
-import React, { useState } from "react";
+import { memo, useState } from "react";
 
-const Vote = React.memo(({ postID, voteCount, myCurrentVote }: VoteType) => {
+const Vote = memo(({ postID, voteCount, myCurrentVote }: VoteType) => {
   const mutateVote = api.handleVote.mutateVote.useMutation();
 
   const [myCurrentVoteState, setMyCurrentVoteState] = useState(myCurrentVote);

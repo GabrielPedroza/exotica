@@ -35,6 +35,16 @@ export const infinitePost = createTRPCRouter({
               typeOfVote: true,
             },
           },
+          comments: {
+            select: {
+              response: true,
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
 

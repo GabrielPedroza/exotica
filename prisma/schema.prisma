@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["filteredRelationCount"]
@@ -12,7 +9,7 @@ datasource db {
   relationMode = "prisma"
 }
 
-// Necessary for Next auth
+// Necessary for Next Auth
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -52,6 +49,7 @@ model User {
   sessions      Session[]
   posts         BlockPost[]
   votes         Vote[]
+  comments      Comment[]
 }
 
 model VerificationToken {
@@ -75,33 +73,36 @@ model BlockPost {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt()
   votes     Vote[]
+  comments  Comment[]
 
   @@index([authorID])
 }
 
-// model Comment {
-//   id       String @id @default(cuid())
-//   reponse  String
-//   author   User   @relation(fields: [authorID], references: [id])
-//   authorID String
-//   voteState Int    @default(0)
-//   upvote   Vote[]
-//   BlockPost BlockPost @relation(fields: [postID], references: [id])
-//   postID   String
+model Comment {
+  id       String @id @default(cuid())
+  response  String
+  user   User   @relation(fields: [userID], references: [id])
+  userID String
+  votes   Vote[]
+  post BlockPost @relation(fields: [postID], references: [id])
+  postID   String
 
-//   @@index([authorID])
-//   @@index([postID])
-// }
+  @@index([userID])
+  @@index([postID])
+}
 
 model Vote {
   id         String    @id @default(cuid())
+  typeOfVote String
   user       User      @relation(fields: [userID], references: [id])
+  userID     String
   postVoted  BlockPost @relation(fields: [postID], references: [id])
   postID     String
-  userID     String
-  typeOfVote String
+  comment   Comment?  @relation(fields: [commentID], references: [id])
+  commentID String?
 
   @@unique([userID, postID])
   @@index([userID])
   @@index([postID])
+  @@index([commentID])
 }
