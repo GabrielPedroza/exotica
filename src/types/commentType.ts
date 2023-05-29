@@ -1,14 +1,24 @@
 import { z } from "zod";
 
 export const CommentSchema = z.object({
-  comments: z.array(
-    z.object({
-      user: z.object({
-        name: z.string().nullable(),
-      }),
-      response: z.string().nullable(),
-    })
-  ),
+  comments: z
+    .array(
+      z.object({
+        user: z.object({
+          name: z.string().nullable(),
+        }),
+        response: z.string().nullable(),
+        id: z.string(),
+        upvotes: z.number().default(0),
+        downvotes: z.number().default(0),
+        votes: z.array(
+          z.object({
+            typeOfVote: z.string(),
+          })
+        ),
+      })
+    )
+    .optional(),
 });
 
 export const createCommentSchema = z.object({
