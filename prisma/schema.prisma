@@ -40,16 +40,17 @@ model Session {
 }
 
 model User {
-  id            String      @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?     @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
   posts         BlockPost[]
-  votes         Vote[]
+  postVotes     PostVote[]
   comments      Comment[]
+  commentVotes  CommentVote[]
 }
 
 model VerificationToken {
@@ -70,39 +71,53 @@ model BlockPost {
   leftBlock  String  @db.LongText
   rightBlock String? @db.LongText
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
-  votes     Vote[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt()
+  postVotes PostVote[]
   comments  Comment[]
 
   @@index([authorID])
 }
 
 model Comment {
-  id       String @id @default(cuid())
-  response  String
-  user   User   @relation(fields: [userID], references: [id])
-  userID String
-  votes   Vote[]
-  post BlockPost @relation(fields: [postID], references: [id])
-  postID   String
+  id           String        @id @default(cuid())
+  response     String
+  user         User          @relation(fields: [userID], references: [id])
+  userID       String
+  votes        PostVote[]
+  post         BlockPost     @relation(fields: [postID], references: [id])
+  postID       String
+  commentVotes CommentVote[]
 
   @@index([userID])
   @@index([postID])
 }
 
-model Vote {
-  id         String    @id @default(cuid())
+model PostVote {
+  id         String     @id @default(cuid())
   typeOfVote String
-  user       User      @relation(fields: [userID], references: [id])
+  user       User       @relation(fields: [userID], references: [id])
   userID     String
-  postVoted  BlockPost @relation(fields: [postID], references: [id])
+  postVoted  BlockPost? @relation(fields: [postID], references: [id])
   postID     String
-  comment   Comment?  @relation(fields: [commentID], references: [id])
-  commentID String?
+  comment    Comment?   @relation(fields: [commentID], references: [id])
+  commentID  String?
 
   @@unique([userID, postID])
   @@index([userID])
   @@index([postID])
+  @@index([commentID])
+}
+
+model CommentVote {
+  id           String   @id @default(cuid())
+  typeOfVote   String
+  user         User     @relation(fields: [userID], references: [id])
+  userID       String
+  commentVoted Comment? @relation(fields: [commentID], references: [id])
+  commentID    String
+
+  @@unique([userID, commentID])
+  @@index([userID])
   @@index([commentID])
 }
