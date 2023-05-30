@@ -8,7 +8,6 @@ export const comment = createTRPCRouter({
       const { prisma, session } = ctx;
       const { comment: response, postID } = input;
       const userID = session.user.id;
-      console.log(response, postID, userID);
 
       return prisma.comment.create({
         data: {
