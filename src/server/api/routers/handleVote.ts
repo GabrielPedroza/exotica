@@ -49,4 +49,49 @@ export const handleVote = createTRPCRouter({
         });
       }
     }),
+
+  mutateCommentVote: protectedProcedure
+    .input(handleCommentVoteSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { prisma, session } = ctx;
+      const { commentID, typeOfVote } = input;
+
+      const userID = session.user.id;
+
+      const vote = await prisma.commentVote.findUnique({
+        where: {
+          userID_commentID: {
+            userID,
+            commentID,
+          },
+        },
+      });
+
+      if (vote && vote.typeOfVote === typeOfVote) {
+        await prisma.commentVote.delete({
+          where: {
+            userID_commentID: {
+              userID,
+              commentID,
+            },
+          },
+        });
+      } else if (vote) {
+        // If the user has already voted with the opposite typeOfVote, update their typeOfVote
+        await prisma.commentVote.update({
+          where: {
+            userID_commentID: {
+              userID,
+              commentID,
+            },
+          },
+          data: { typeOfVote },
+        });
+      } else {
+        // If the user has not already voted, add their vote to the Votes table
+        await prisma.commentVote.create({
+          data: { commentID, userID, typeOfVote },
+        });
+      }
+    }),
 });
