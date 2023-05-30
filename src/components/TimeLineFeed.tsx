@@ -5,7 +5,7 @@ import { type TimelineOptions } from "@/src/types/timelineOptions";
 import CreatedByUser from "./CreatedByUser";
 import PostContent from "./PostContent";
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
-import Vote from "./Vote";
+import PostVote from "./PostVote";
 import Comment from "./Comment";
 import CreateComment from "./CreateComment";
 
@@ -41,19 +41,19 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
                     className="max-w-[w-full]"
                   >
                     <PostContent content={post} />
-                    <Vote
+                    <PostVote
                       postID={post.id}
                       voteCount={
-                        post._count.votes -
-                        (post.totalVotes - post._count.votes)
+                        post._count.postVotes -
+                        (post.totalVotes - post._count.postVotes)
                       }
-                      myCurrentVote={post.currentUserVoteState}
+                      myCurrentVote={post.currentUserVoteState as "up" | "down"}
                     />
                     <div>
                       <CreateComment postID={post.id} />
                       <Comment comments={post.comments} />
                     </div>
-                    <p>Post made by:</p>
+                    <p>Post made by: </p>
                     <CreatedByUser
                       userInfo={{
                         author: {

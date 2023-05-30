@@ -1,14 +1,17 @@
 import { api } from "@/utils/api";
-import type { VoteType } from "../types/voteType";
+import type { PostVoteType } from "../types/postVoteType";
 import { memo, useState } from "react";
 
-const Vote = memo(({ postID, voteCount, myCurrentVote }: VoteType) => {
-  const mutateVote = api.handleVote.mutateVote.useMutation();
+type VoteType = "up" | "down";
+type CurrentVoteType = VoteType | null;
+
+const PostVote = memo(({ postID, voteCount, myCurrentVote }: PostVoteType) => {
+  const mutateVote = api.handleVote.mutatePostVote.useMutation();
 
   const [myCurrentVoteState, setMyCurrentVoteState] = useState(myCurrentVote);
   const [voteCountState, setVoteCount] = useState(voteCount);
 
-  const handleVote = async (typeOfVote: string) => {
+  const handleVote = async (typeOfVote: VoteType) => {
     if (!mutateVote.isLoading) {
       if (!myCurrentVoteState) {
         if (typeOfVote === "up") {
@@ -68,17 +71,15 @@ const Vote = memo(({ postID, voteCount, myCurrentVote }: VoteType) => {
   );
 });
 
-Vote.displayName = "Vote";
+PostVote.displayName = "Vote";
 
-const VoteButton = ({
-  type,
-  myCurrentVote,
-  handleVote,
-}: {
-  type: string;
-  myCurrentVote: string | null;
-  handleVote: (typeOfVote: string) => void;
-}) => (
+type VoteButtonProps = {
+  type: VoteType;
+  myCurrentVote: CurrentVoteType;
+  handleVote: (typeOfVote: VoteType) => void;
+};
+
+const VoteButton = ({ type, myCurrentVote, handleVote }: VoteButtonProps) => (
   <button
     className={`flex h-10 w-10 items-center justify-center rounded-full focus:outline-none ${
       myCurrentVote === type
@@ -121,4 +122,4 @@ const VoteButton = ({
   </button>
 );
 
-export default Vote;
+export default PostVote;

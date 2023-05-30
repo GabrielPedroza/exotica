@@ -14,76 +14,138 @@ export const infinitePost = createTRPCRouter({
       const { cursor, options } = input;
       const { limit, sort, filters } = options;
 
-      const items = await ctx.prisma.blockPost.findMany({
-        take: limit + 1,
-        where: filters,
-        cursor: cursor ? { id: cursor } : undefined,
-        orderBy: { createdAt: sort },
-        include: {
-          author: true,
-          _count: {
-            select: {
-              votes: {
-                where: {
-                  typeOfVote: "up",
+      const itemsWithTotalVotesAndVoteState = await ctx.prisma.$transaction(
+        async (prisma) => {
+          const items = await prisma.blockPost.findMany({
+            take: limit + 1,
+            where: filters,
+            cursor: cursor ? { id: cursor } : undefined,
+            orderBy: { createdAt: sort },
+            include: {
+              author: true,
+              _count: {
+                select: {
+                  postVotes: {
+                    where: {
+                      typeOfVote: "up",
+                    },
+                  },
                 },
               },
+              postVotes: {
+                select: {
+                  typeOfVote: true,
+                },
+              },
+              comments: false, // Exclude comments for now
             },
-          },
-          votes: {
+          });
+
+          const postIdList = items.map((item) => item.id);
+
+          const voteState = await prisma.postVote.findMany({
+            where: {
+              postID: {
+                in: postIdList,
+              },
+              userID: ctx.session?.user?.id,
+            },
             select: {
+              postID: true,
               typeOfVote: true,
             },
-          },
-          comments: {
+          });
+
+          const voteStateByPostId: Record<string, string | null> = {};
+          voteState.forEach((vote) => {
+            voteStateByPostId[vote.postID] = vote.typeOfVote;
+          });
+
+          const itemsWithTotalVotesAndVoteState = items.map((item) => {
+            const totalVotes = item.postVotes.length;
+            const currentUserVoteState =
+              voteStateByPostId[item.id] || (null as "up" | "down" | null);
+            return {
+              ...item,
+              totalVotes: totalVotes,
+              currentUserVoteState: currentUserVoteState,
+            };
+          });
+
+          return itemsWithTotalVotesAndVoteState;
+        }
+      );
+
+      // Fetch comments in batch for all items
+      const commentPromises = itemsWithTotalVotesAndVoteState.map(
+        async (item) => {
+          // Fetch comments
+          const comments = await ctx.prisma.comment.findMany({
+            take: 2,
+            where: {
+              postID: item.id,
+            },
             select: {
               response: true,
+              id: true,
               user: {
                 select: {
                   name: true,
                 },
               },
+              votes: {
+                select: {
+                  typeOfVote: true,
+                },
+              },
+              commentVotes: {
+                select: {
+                  typeOfVote: true,
+                },
+              },
             },
-          },
-        },
-      });
+          });
 
-      const postIdList = items.map((item) => item.id);
-      const voteState = await ctx.prisma.vote.findMany({
-        where: {
-          postID: {
-            in: postIdList,
-          },
-          userID: ctx.session?.user?.id,
-        },
-        select: {
-          postID: true,
-          typeOfVote: true,
-        },
-      });
+          // Compute upvotes and downvotes for each comment
+          const computedComments = comments.map((comment) => {
+            const upvotes = comment.commentVotes.filter(
+              (vote) => vote.typeOfVote === "up"
+            ).length;
+            const downvotes = comment.commentVotes.filter(
+              (vote) => vote.typeOfVote === "down"
+            ).length;
+            return {
+              ...comment,
+              upvotes,
+              downvotes,
+            };
+          });
 
-      const voteStateByPostId: Record<string, string | null> = {};
-      voteState.forEach((vote) => {
-        voteStateByPostId[vote.postID] = vote.typeOfVote;
-      });
+          // Sort comments based on upvotes
+          const sortedComments = computedComments.sort(
+            (a, b) => b.upvotes - a.upvotes
+          );
 
-      const itemsWithTotalVotesAndVoteState = items.map((item) => {
-        const totalVotes = item.votes.length;
-        const currentUserVoteState = voteStateByPostId[item.id] || null;
-        return {
+          // Return only the top 2 comments
+          return sortedComments.slice(0, 2);
+        }
+      );
+
+      const commentsByPostId = await Promise.all(commentPromises);
+      const itemsWithTotalVotesAndComments =
+        itemsWithTotalVotesAndVoteState.map((item, index) => ({
           ...item,
-          totalVotes: totalVotes,
-          currentUserVoteState: currentUserVoteState,
-        };
-      });
+          comments: commentsByPostId[index],
+        }));
 
-      let nextCursor: typeof cursor | undefined = undefined;
-      if (items.length > limit) {
-        const nextItem = items.pop(); // return the last item from the array
+      let nextCursor;
+      if (itemsWithTotalVotesAndComments.length > limit) {
+        const nextItem = itemsWithTotalVotesAndComments.pop();
         nextCursor = nextItem?.id;
       }
+
       return {
-        itemsWithTotalVotesAndVoteState,
+        itemsWithTotalVotesAndVoteState: itemsWithTotalVotesAndComments,
         nextCursor,
       };
     }),
