@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { type CommentProps, CommentSchema } from "../types/commentType";
 import { api } from "../utils/api";
+import { currentVoteStateComment } from "../utils/currentVoteState";
 
 type HandleCommentVote = (
   event: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -9,21 +10,31 @@ type HandleCommentVote = (
 ) => void;
 
 const Comment = memo((comments: CommentProps) => {
-  const parsedComments = CommentSchema.parse(comments);
   const mutateComment = api.handleVote.mutateCommentVote.useMutation();
+  const [parsedComments, setParsedComments] = useState(
+    CommentSchema.parse(comments)
+  );
 
   if (!parsedComments.comments) return null;
 
-  console.log(parsedComments.comments);
-
   const handleVote: HandleCommentVote = (event, id, typeOfVote) => {
-    // if (!mutateComment.isLoading) return null;
-    console.log(event, typeOfVote, id);
+    event.stopPropagation(); // Prevent event bubbling
+    if (!mutateComment.isLoading) {
+      try {
+        mutateComment.mutate({ commentID: id, typeOfVote });
+        if (!parsedComments.comments) return null;
 
-    try {
-      mutateComment.mutate({ commentID: id, typeOfVote });
-    } catch (error) {
-      console.error(error);
+        const updatedComments = parsedComments.comments.map((comment) => {
+          if (comment.id === id)
+            return currentVoteStateComment(typeOfVote, comment);
+          return comment;
+        });
+
+        // Update the state variable with the updated comments
+        setParsedComments({ ...parsedComments, comments: updatedComments });
+      } catch (error) {
+        console.error(error);
+      }
     }
   };
 
