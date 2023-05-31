@@ -1,8 +1,15 @@
-import {
-  handleCommentVoteSchema,
-  handlePostVoteSchema,
-} from "@/src/types/handleVote";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { z } from "zod";
+
+const handlePostVoteSchema = z.object({
+  postID: z.string(),
+  typeOfVote: z.enum(["up", "down"]),
+});
+
+const handleCommentVoteSchema = z.object({
+  commentID: z.string(),
+  typeOfVote: z.enum(["up", "down"]),
+});
 
 export const handleVote = createTRPCRouter({
   mutatePostVote: protectedProcedure
