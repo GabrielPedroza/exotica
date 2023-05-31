@@ -37,7 +37,6 @@ export const infinitePost = createTRPCRouter({
                   typeOfVote: true,
                 },
               },
-              comments: false, // Exclude comments for now
             },
           });
 
@@ -93,17 +92,32 @@ export const infinitePost = createTRPCRouter({
                   name: true,
                 },
               },
-              votes: {
-                select: {
-                  typeOfVote: true,
-                },
-              },
               commentVotes: {
                 select: {
                   typeOfVote: true,
                 },
               },
             },
+          });
+
+          const userCommentVoteState = await ctx.prisma.commentVote.findMany({
+            where: {
+              commentID: {
+                in: comments.map((comment) => comment.id),
+              },
+              userID: ctx.session?.user?.id,
+            },
+            select: {
+              commentID: true,
+              typeOfVote: true,
+            },
+          });
+
+          const userCommentVoteStateByCommentId: Record<string, string | null> =
+            {};
+
+          userCommentVoteState.forEach((vote) => {
+            userCommentVoteStateByCommentId[vote.commentID] = vote.typeOfVote;
           });
 
           // Compute upvotes and downvotes for each comment
@@ -116,6 +130,7 @@ export const infinitePost = createTRPCRouter({
             ).length;
             return {
               ...comment,
+              currentUserVoteState: userCommentVoteStateByCommentId[comment.id],
               upvotes,
               downvotes,
             };
