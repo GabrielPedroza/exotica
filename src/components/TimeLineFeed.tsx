@@ -51,7 +51,7 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
                     />
                     <div>
                       <CreateComment postID={post.id} />
-                      <Comment comments={post.comments} />
+                      <Comment comments={post.comments ?? []} />
                     </div>
                     <p>Post made by: </p>
                     <CreatedByUser

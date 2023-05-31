@@ -1,9 +1,11 @@
 import { api } from "@/utils/api";
-import type { PostVoteType } from "../types/postVoteType";
 import { memo, useState } from "react";
-
-type VoteType = "up" | "down";
-type CurrentVoteType = VoteType | null;
+import { currentVoteState } from "../utils/currentVoteState";
+import type {
+  CurrentVoteType,
+  PostVoteType,
+  VoteType,
+} from "../types/interactionTypes";
 
 const PostVote = memo(({ postID, voteCount, myCurrentVote }: PostVoteType) => {
   const mutateVote = api.handleVote.mutatePostVote.useMutation();
@@ -13,35 +15,12 @@ const PostVote = memo(({ postID, voteCount, myCurrentVote }: PostVoteType) => {
 
   const handleVote = async (typeOfVote: VoteType) => {
     if (!mutateVote.isLoading) {
-      if (!myCurrentVoteState) {
-        if (typeOfVote === "up") {
-          setVoteCount((prev) => prev + 1);
-        }
-        if (typeOfVote === "down") {
-          setVoteCount((prev) => prev - 1);
-        }
-      } else {
-        if (myCurrentVoteState === "up" && typeOfVote === "up") {
-          setVoteCount((prev) => prev - 1);
-        }
-        if (myCurrentVoteState === "down" && typeOfVote === "down") {
-          setVoteCount((prev) => prev + 1);
-        }
-        if (myCurrentVoteState === "up" && typeOfVote === "down") {
-          setVoteCount((prev) => prev - 2);
-        }
-        if (myCurrentVoteState === "down" && typeOfVote === "up") {
-          setVoteCount((prev) => prev + 2);
-        }
-      }
-
-      if (myCurrentVoteState === typeOfVote) {
-        setMyCurrentVoteState(null);
-      } else if (!myCurrentVoteState) {
-        setMyCurrentVoteState(typeOfVote);
-      } else {
-        setMyCurrentVoteState(typeOfVote);
-      }
+      currentVoteState(
+        typeOfVote,
+        myCurrentVoteState,
+        setVoteCount,
+        setMyCurrentVoteState
+      );
     }
 
     try {
