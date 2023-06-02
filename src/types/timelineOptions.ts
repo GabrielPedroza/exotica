@@ -14,7 +14,6 @@ export const timelineOptions = z.object({
             id: z.string(),
           })
           .optional(),
-        //add programming languages, etc
       }),
     })
     .optional(),
@@ -23,3 +22,5 @@ export const timelineOptions = z.object({
 });
 
 export type TimelineOptions = z.infer<typeof timelineOptions>;
+export type TimelineOptionsSort = z.infer<typeof timelineOptions>["sort"];
+export type TimelineOptionsFilters = z.infer<typeof timelineOptions>["filters"];

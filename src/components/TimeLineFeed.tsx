@@ -28,13 +28,13 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
         <>
           {data.pages.map((page, i) => (
             <React.Fragment key={`page_${i}`}>
-              {page.itemsWithTotalVotesAndVoteState.map((post, j) => {
+              {page.postContentWithCommentsAndState.map((post, j) => {
                 return (
                   <div
                     key={post.id}
                     ref={
                       i === data.pages.length - 1 &&
-                      j === page.itemsWithTotalVotesAndVoteState.length - 3
+                      j === page.postContentWithCommentsAndState.length - 3
                         ? lastElementRef
                         : null
                     }
