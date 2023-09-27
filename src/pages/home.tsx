@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import Navbar from "@/components/Navbar";
 import { getSession } from "next-auth/react";
 import { type TimelineOptions } from "@/src/types/timelineOptions";
-import Post from "@/components/Post";
+import CreatePost from "@/src/components/CreatePost";
 import TimeLineFeed from "@/components/TimeLineFeed";
 
 const Home: NextPage = () => {
@@ -33,7 +33,7 @@ const Home: NextPage = () => {
       <div>
         <Navbar />
         <div className="ml-auto flex w-full flex-col rounded-l-md bg-slate-600 text-center">
-          <Post />
+          <CreatePost />
           <TimeLineFeed options={options} />
         </div>
       </div>

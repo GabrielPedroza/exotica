@@ -25,7 +25,7 @@ type IEditorProps = EditorProps & {
   getValue: () => string | undefined;
 };
 
-const Post = () => {
+const CreatePost = () => {
   const defaultCode = "// write your code here";
   const secondBlockOptionalCode = ". (this code block is optional)";
   const [description, setDescription] = useState("");
@@ -162,4 +162,4 @@ const Post = () => {
   );
 };
 
-export default Post;
+export default CreatePost;

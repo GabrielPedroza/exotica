@@ -1,13 +1,9 @@
 import { api } from "@/utils/api";
-import React from "react";
+import { Fragment } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import { type TimelineOptions } from "@/src/types/timelineOptions";
-import CreatedByUser from "./CreatedByUser";
-import PostContent from "./PostContent";
 import useIntersectionObserver from "@/hooks/useIntersectionObserver";
-import PostVote from "./PostVote";
-import Comment from "./Comment";
-import CreateComment from "./CreateComment";
+import Content from "./Content";
 
 const TimeLineFeed = (props: { options: TimelineOptions }) => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -26,47 +22,27 @@ const TimeLineFeed = (props: { options: TimelineOptions }) => {
     <div className="rounded-l-md bg-slate-600 text-center">
       {data ? (
         <>
-          {data.pages.map((page, i) => (
-            <React.Fragment key={`page_${i}`}>
-              {page.postContentWithCommentsAndState.map((post, j) => {
+          {data.pages.map((page, currentPage) => (
+            <Fragment key={`page_${currentPage}`}>
+              {page.postContentWithCommentsAndState.map((post, currentPost) => {
                 return (
                   <div
                     key={post.id}
                     ref={
-                      i === data.pages.length - 1 &&
-                      j === page.postContentWithCommentsAndState.length - 3
+                      // if user is on the last queried page and second to last post, query more posts
+                      currentPage === data.pages.length - 1 &&
+                      currentPost ===
+                        page.postContentWithCommentsAndState.length - 3
                         ? lastElementRef
                         : null
                     }
                     className="max-w-[w-full]"
                   >
-                    <PostContent content={post} />
-                    <PostVote
-                      postID={post.id}
-                      voteCount={
-                        post._count.postVotes -
-                        (post.totalVotes - post._count.postVotes)
-                      }
-                      myCurrentVote={post.currentUserVoteState as "up" | "down"}
-                    />
-                    <div>
-                      <CreateComment postID={post.id} />
-                      <Comment comments={post.comments ?? []} />
-                    </div>
-                    <p>Post made by: </p>
-                    <CreatedByUser
-                      userInfo={{
-                        author: {
-                          name: post.author.name,
-                          image: post.author.image,
-                        },
-                        authorID: post.authorID,
-                      }}
-                    />
+                    <Content {...post} />
                   </div>
                 );
               })}
-            </React.Fragment>
+            </Fragment>
           ))}
         </>
       ) : (
